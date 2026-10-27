@@ -28,3 +28,7 @@ for rule in rules:
     for field in rule:
         if field not in REQUIRED:
             print(f"{name}: unknown field '{field}'")
+    # Check D: Flag for ANY ANY rule 
+    for field in ["source", "destination", "service"]:
+        if "any" in rule[field]:
+            print(f"{name}: {field} is 'any'")
