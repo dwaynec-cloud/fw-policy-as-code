@@ -1,4 +1,5 @@
 from datetime import date
+import ipaddress
 
 import yaml
 
@@ -7,6 +8,36 @@ REQUIRED = ["name", "ticket", "owner", "from_zone", "to_zone",
             "source", "destination", "service", "action", "log", "expires"]
 # Fields that define what traffic a rule matches
 MATCH_FIELDS = ["from_zone", "to_zone", "source", "destination", "service", "action"]
+
+def addr_inside(addr, broader_list):
+    """True if one address sits inside any address in broader_list."""
+    if "any" in broader_list:
+        return True                  # 'any' covers everything
+    if addr == "any":
+        return False                 # nothing narrower covers 'any'
+    for broad in broader_list:
+        if ipaddress.ip_network(addr).subnet_of(ipaddress.ip_network(broad)):
+            return True
+    return False
+
+
+def covers(earlier, rule):
+    """True if 'earlier' matches ALL the traffic 'rule' matches."""
+    # 1. Zones: must be the same, or earlier uses 'any'
+    for zone in ["from_zone", "to_zone"]:
+        if earlier[zone] != "any" and earlier[zone] != rule[zone]:
+            return False
+    # 2. Every source and destination must sit inside earlier's
+    for field in ["source", "destination"]:
+        for addr in rule[field]:
+            if not addr_inside(addr, earlier[field]):
+                return False
+    # 3. Services: earlier is 'any', or includes every service
+    if "any" not in earlier["service"]:
+        for svc in rule["service"]:
+            if svc not in earlier["service"]:
+                return False
+    return True
 
 # 1. Open the rules file and turn the YAML into Python data
 with open("rules/datacenter-atl.yml") as f:
@@ -49,7 +80,8 @@ for i, rule in enumerate(rules):
                 same = False
         if same:
             print(f"{name}: duplicate of {earlier['name']}")
-    
+        elif covers(earlier, rule):
+            print(f"{name}: shadowed by {earlier['name']}")
 
 
 
