@@ -1,0 +1,24 @@
+---
+- name: Render firewall config from YAML rules
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Load rule data
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/../rules/datacenter-atl.yml"
+
+    - name: Create build folder
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/../build"
+        state: directory
+
+    - name: Render Palo Alto config
+      ansible.builtin.template:
+        src: panos.j2
+        dest: "{{ playbook_dir }}/../build/panos.set"
+
+    - name: Render FortiOS config
+      ansible.builtin.template:
+        src: fortios.j2
+        dest: "{{ playbook_dir }}/../build/fortios.conf"

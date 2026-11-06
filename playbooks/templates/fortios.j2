@@ -1,0 +1,17 @@
+# Generated from rules/datacenter-atl.yml - do not edit by hand
+config firewall policy
+{% for rule in rules %}
+    edit 0
+        set name "{{ rule.name }}"
+        set srcintf "{{ rule.from_zone }}"
+        set dstintf "{{ rule.to_zone }}"
+        set srcaddr "{{ rule.source | join('" "') | replace('any', 'all') }}"
+        set dstaddr "{{ rule.destination | join('" "') | replace('any', 'all') }}"
+        set service "{{ rule.service | join('" "') | replace('any', 'ALL') }}"
+        set action {{ 'accept' if rule.action == 'allow' else 'deny' }}
+        set schedule "always"
+        set logtraffic {{'all' if rule.log else 'disable'}}
+        set comments "{{ rule.ticket | default('NONE') }} | owner: {{ rule.owner | default('NONE') }}"
+    next
+{% endfor %}
+end
