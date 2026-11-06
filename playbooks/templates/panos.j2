@@ -1,0 +1,13 @@
+# Generated from rules/datacenter-atl.yml - do not edit by hand
+{% for rule in rules %}
+# {{ rule.name }} | ticket: {{ rule.ticket | default('NONE') }} | owner: {{ rule.owner | default('NONE') }}
+set rulebase security rules {{ rule.name }} from {{ rule.from_zone }}
+set rulebase security rules {{ rule.name }} to {{ rule.to_zone }}
+set rulebase security rules {{ rule.name }} source [ {{ rule.source | join(' ') }} ]
+set rulebase security rules {{ rule.name }} destination [ {{ rule.destination | join(' ') }} ]
+set rulebase security rules {{ rule.name }} service [ {{ rule.service | join(' ') }} ]
+set rulebase security rules {{ rule.name }} application any
+set rulebase security rules {{ rule.name }} action {{ rule.action }}
+set rulebase security rules {{ rule.name }} log-end {{ 'yes' if rule.log else 'no' }}
+
+{% endfor %}
