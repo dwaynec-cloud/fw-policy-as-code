@@ -1,2 +1,6 @@
 .venv/
 build/
+.terraform/
+*.tfstate.*
+tfplan
+*.tfstate
